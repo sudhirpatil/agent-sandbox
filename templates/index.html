@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Agent Sandbox</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- ── Header ──────────────────────────────────────────── -->
+    <header class="header">
+      <div class="header-left">
+        <div class="logo">
+          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+          <span>AI Agent Sandbox</span>
+        </div>
+        <div class="connection-status" id="connectionStatus">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusText">Connecting…</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="stack-badge">LangChain</span>
+        <span class="stack-badge">MCP</span>
+        <span class="stack-badge">Multi-Model</span>
+      </div>
+    </header>
+
+    <!-- ── Three-column layout ─────────────────────────────── -->
+    <div class="main">
+
+      <!-- ── LEFT SIDEBAR ──────────────────────────────────── -->
+      <aside class="sidebar">
+
+        <!-- Chat history section -->
+        <div class="sb-history">
+          <div class="sb-row sb-row--header">
+            <span class="sb-label">Chat History</span>
+            <button class="sb-icon-btn" id="newChatBtn" title="New chat">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+          </div>
+          <div class="sb-chat-list" id="chatHistoryList"></div>
+          <div class="sb-btn-row">
+            <button class="sb-btn" id="newChatBtn2">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              New Chat
+            </button>
+            <button class="sb-btn sb-btn--danger" id="deleteChatBtn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
+              </svg>
+              Delete Chat
+            </button>
+          </div>
+        </div>
+
+        <div class="sb-divider"></div>
+
+        <!-- Model selector section -->
+        <div class="sb-model">
+          <div class="sb-row sb-row--header">
+            <span class="sb-label">Choose Model</span>
+          </div>
+
+          <!-- Provider tabs -->
+          <div class="sb-provider-tabs" id="providerTabs">
+            <button class="sb-tab" data-provider="anthropic">🟣 Anthropic</button>
+            <button class="sb-tab active" data-provider="openai">🟢 OpenAI</button>
+            <button class="sb-tab" data-provider="google">🔵 Google</button>
+          </div>
+
+          <!-- Model radio list -->
+          <div class="sb-model-list" id="modelList">
+            <div class="sb-model-group" data-provider="anthropic" style="display:none">
+              {% for model in anthropic_models %}
+              <label class="sb-model-item">
+                <input type="radio" name="modelSelect" value="{{ model.id }}" />
+                <div class="sb-model-text">
+                  <span class="sb-model-name">{{ model.name }}</span>
+                  <span class="sb-model-desc">{{ model.description }}</span>
+                </div>
+              </label>
+              {% endfor %}
+            </div>
+            <div class="sb-model-group" data-provider="openai">
+              {% for model in openai_models %}
+              <label class="sb-model-item{% if model.id == 'gpt-4o-mini' %} active{% endif %}">
+                <input type="radio" name="modelSelect" value="{{ model.id }}"{% if model.id == 'gpt-4o-mini' %} checked{% endif %} />
+                <div class="sb-model-text">
+                  <span class="sb-model-name">{{ model.name }}</span>
+                  <span class="sb-model-desc">{{ model.description }}</span>
+                </div>
+              </label>
+              {% endfor %}
+            </div>
+            <div class="sb-model-group" data-provider="google" style="display:none">
+              {% for model in google_models %}
+              <label class="sb-model-item">
+                <input type="radio" name="modelSelect" value="{{ model.id }}" />
+                <div class="sb-model-text">
+                  <span class="sb-model-name">{{ model.name }}</span>
+                  <span class="sb-model-desc">{{ model.description }}</span>
+                </div>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+      </aside><!-- /sidebar -->
+
+      <!-- ── CENTER: Chat ───────────────────────────────────── -->
+      <section class="chat-panel">
+
+        <div class="messages" id="messages">
+          <div class="welcome" id="welcome">
+            <div class="welcome-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="8" r="4"></circle>
+                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"></path>
+              </svg>
+            </div>
+            <h2>AI Agent Sandbox</h2>
+            <p>Pick a model from the left, then start chatting. The agent has access to MCP tools.</p>
+            <div class="tool-chips">
+              <span class="tool-chip">🔍 Web Search</span>
+              <span class="tool-chip">🧮 Calculator</span>
+              <span class="tool-chip">📁 File System</span>
+              <span class="tool-chip">🕐 DateTime</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Input -->
+        <div class="input-area">
+          <div class="active-model-bar" id="activeModelBar">
+            <span id="activeModelLabel">gpt-4o-mini</span>
+          </div>
+          <div class="input-row">
+            <textarea
+              id="messageInput"
+              class="message-input"
+              placeholder="Ask anything… (Enter to send, Shift+Enter for newline)"
+              rows="1"
+              disabled
+            ></textarea>
+            <button id="sendBtn" class="send-btn" disabled title="Send (Enter)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── RIGHT: Agent activity ──────────────────────────── -->
+      <aside class="agent-panel">
+        <div class="panel-header">
+          <span class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            Agent Activity
+          </span>
+          <button class="clear-activity-btn" id="clearActivityBtn" title="Clear activity log">✕</button>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-item">
+            <div class="stat-label">Model</div>
+            <div class="stat-value" id="statModel">—</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Status</div>
+            <div class="stat-value" id="statStatus">Idle</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Tool Calls</div>
+            <div class="stat-value" id="statToolCalls">0</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Messages</div>
+            <div class="stat-value" id="statMessages">0</div>
+          </div>
+        </div>
+
+        <div class="activity-feed" id="activityFeed">
+          <div class="activity-placeholder" id="activityPlaceholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <p>Agent activity will appear here as the model works</p>
+          </div>
+        </div>
+      </aside>
+
+    </div><!-- /main -->
+  </div><!-- /app -->
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
