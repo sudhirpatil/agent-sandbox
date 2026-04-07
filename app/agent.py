@@ -2,10 +2,13 @@
 LangChain 1.x agent supporting Anthropic Claude, OpenAI, and Google Gemini models.
 """
 
+import logging
 import os
 import sys
 from pathlib import Path
 from typing import AsyncGenerator
+
+logger = logging.getLogger(__name__)
 
 from langchain.agents import create_agent
 from langchain_anthropic import ChatAnthropic
@@ -150,7 +153,7 @@ async def stream_agent_response(
 
         async for event in agent.astream_events(
             {"messages": messages},
-            config={"recursion_limit": 5},
+            config={"recursion_limit": 25},
             version="v2",
         ):
             ename = event["event"]
@@ -210,4 +213,5 @@ async def stream_agent_response(
         yield {"type": "done", "output": final_output}
 
     except Exception as exc:
+        logger.error("Agent error for model=%s: %s", model_id, exc, exc_info=True)
         yield {"type": "error", "message": str(exc)}

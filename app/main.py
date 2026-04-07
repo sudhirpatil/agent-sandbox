@@ -2,10 +2,17 @@
 FastAPI application — serves the chat UI and WebSocket endpoint.
 """
 
+import logging
 import os
 from pathlib import Path
 
 from dotenv import load_dotenv
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
@@ -107,6 +114,7 @@ async def chat_ws(websocket: WebSocket):
     except WebSocketDisconnect:
         pass
     except Exception as exc:
+        logger.error("WebSocket error: %s", exc, exc_info=True)
         try:
             await websocket.send_json({"type": "error", "message": str(exc)})
         except Exception:
