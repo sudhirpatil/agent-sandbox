@@ -30,8 +30,25 @@
       </div>
     </header>
 
+    <!-- ── Top-level view tabs ───────────────────────────────── -->
+    <div class="page-tabs" id="pageTabs">
+      <button class="page-tab active" data-view="chat" id="tabChat">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        Chat Playground
+      </button>
+      <button class="page-tab" data-view="mcp" id="tabMcp">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+        </svg>
+        MCP Client
+      </button>
+    </div>
+
     <!-- ── Three-column layout ─────────────────────────────── -->
-    <div class="main">
+    <div class="main" id="viewChat">
 
       <!-- ── LEFT SIDEBAR ──────────────────────────────────── -->
       <aside class="sidebar">
@@ -210,7 +227,106 @@
         </div>
       </aside>
 
-    </div><!-- /main -->
+    </div><!-- /viewChat -->
+
+    <!-- ── MCP Client view ───────────────────────────────────── -->
+    <div class="main mcp-view" id="viewMcp" style="display:none">
+
+      <!-- LEFT: MCP server list -->
+      <aside class="mcp-server-panel">
+        <div class="mcp-panel-header">
+          <span class="mcp-panel-title">MCP Servers</span>
+          <button class="mcp-add-btn" id="mcpAddServerBtn" title="Add MCP server">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="mcp-server-list" id="mcpServerList"></div>
+      </aside>
+
+      <!-- RIGHT: Server detail / add form / test area -->
+      <section class="mcp-detail-panel" id="mcpDetailPanel">
+
+        <!-- Empty state -->
+        <div class="mcp-empty-state" id="mcpEmptyState">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          </svg>
+          <p>Add an MCP server to get started</p>
+        </div>
+
+        <!-- Add Server form -->
+        <div class="mcp-add-form" id="mcpAddForm" style="display:none">
+          <h3 class="mcp-form-title">Add MCP Server</h3>
+
+          <label class="mcp-field-label">Name</label>
+          <input class="mcp-input" type="text" id="mcpServerName" placeholder="My MCP Server" />
+
+          <label class="mcp-field-label">Transport</label>
+          <div class="mcp-transport-tabs" id="mcpTransportTabs">
+            <button class="mcp-transport-tab active" data-transport="stdio">stdio</button>
+            <button class="mcp-transport-tab" data-transport="sse">SSE</button>
+            <button class="mcp-transport-tab" data-transport="streamable_http">HTTP</button>
+          </div>
+
+          <label class="mcp-field-label">Config JSON</label>
+          <textarea class="mcp-config-textarea" id="mcpConfigJson" rows="5"
+            placeholder='{"command": "npx", "args": ["-y", "@my/mcp-server"]}'></textarea>
+
+          <label class="mcp-field-label">Bearer Token <span style="font-weight:400;color:var(--text-dim)">(optional)</span></label>
+          <input class="mcp-input" type="password" id="mcpBearerToken"
+                 placeholder="Leave blank if not required" autocomplete="off" />
+
+          <div class="mcp-form-actions">
+            <button class="mcp-btn mcp-btn--secondary" id="mcpCancelAddBtn">Cancel</button>
+            <button class="mcp-btn mcp-btn--primary" id="mcpSaveServerBtn">Save Server</button>
+          </div>
+        </div>
+
+        <!-- Server detail / test view -->
+        <div class="mcp-server-detail" id="mcpServerDetail" style="display:none">
+
+          <div class="mcp-detail-header">
+            <div class="mcp-detail-title-group">
+              <h3 class="mcp-server-detail-name" id="mcpDetailName"></h3>
+              <span class="mcp-transport-badge" id="mcpDetailTransport"></span>
+            </div>
+            <div class="mcp-detail-actions">
+              <span class="mcp-status-indicator">
+                <span class="mcp-status-dot mcp-status-dot--idle" id="mcpStatusDot"></span>
+                <span id="mcpStatusText">Not connected</span>
+              </span>
+              <button class="mcp-btn mcp-btn--primary" id="mcpConnectBtn">Connect</button>
+              <button class="mcp-btn mcp-btn--danger" id="mcpDeleteServerBtn">Delete</button>
+            </div>
+          </div>
+
+          <!-- Tools / Resources tabs — shown after connecting -->
+          <div class="mcp-result-tabs" id="mcpResultTabs" style="display:none">
+            <button class="mcp-result-tab active" data-tab="tools" id="mcpTabTools">
+              Tools&nbsp;<span class="mcp-tab-count" id="mcpToolCount">0</span>
+            </button>
+            <button class="mcp-result-tab" data-tab="resources" id="mcpTabResources">
+              Resources&nbsp;<span class="mcp-tab-count" id="mcpResourceCount">0</span>
+            </button>
+          </div>
+
+          <div class="mcp-tab-content" id="mcpToolsContent" style="display:none">
+            <div class="mcp-list" id="mcpToolsList"></div>
+          </div>
+
+          <div class="mcp-tab-content" id="mcpResourcesContent" style="display:none">
+            <div class="mcp-list" id="mcpResourcesList"></div>
+          </div>
+
+        </div><!-- /mcp-server-detail -->
+
+      </section><!-- /mcp-detail-panel -->
+
+    </div><!-- /viewMcp -->
+
   </div><!-- /app -->
 
   <script src="/static/js/app.js"></script>

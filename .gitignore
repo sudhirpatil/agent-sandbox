@@ -31,5 +31,30 @@ sandbox/*
 # Claude Code local settings
 .claude/settings.local.json
 
+# Database (runtime data, not source)
+data/
+*.db
+*.db-shm
+*.db-wal
+
 # Logs
 *.log
+logs/
+
+# OS
+Thumbs.db
+
+# Python testing / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Temporary files
+*.tmp
+*.bak
+*.orig
